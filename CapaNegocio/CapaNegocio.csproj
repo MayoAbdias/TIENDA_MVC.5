@@ -48,6 +48,7 @@
     <Compile Include="CapaN_Marca.cs" />
     <Compile Include="CapaN_Producto.cs" />
     <Compile Include="CapaN_Reporte.cs" />
+    <Compile Include="CapaN_Ubicacion.cs" />
     <Compile Include="CapaN_Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -48,6 +48,7 @@
     <Compile Include="CapaD_Marca.cs" />
     <Compile Include="CapaD_Producto.cs" />
     <Compile Include="CapaD_Reporte.cs" />
+    <Compile Include="CapaD_Ubicacion.cs" />
     <Compile Include="CapaD_Usuarios.cs" />
     <Compile Include="Conexion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
