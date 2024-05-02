@@ -107,5 +107,54 @@ namespace CapaPresentacionTienda.Controllers
             int cantidad = new CapaN_Carrito().CantidadEnCarrito(idcliente);
             return Json(new { cantidad = cantidad }, JsonRequestBehavior.AllowGet);
         }
+        [HttpPost]
+        public JsonResult ListarProductosCarrito()
+        {
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            List<Carrito> lista = new List<Carrito>();
+            bool conversion;
+
+            lista = new CapaN_Carrito().ListarProductos(idcliente).Select(oc => new Carrito()
+            {
+                ObjProducto = new Producto()
+                {
+                    IdProducto = oc.ObjProducto.IdProducto,
+                    Nombre = oc.ObjProducto.Nombre,
+                    ObjMarca = oc.ObjProducto.ObjMarca,
+                    Precio = oc.ObjProducto.Precio,
+                    RutaImagen = oc.ObjProducto.RutaImagen,
+                    Base64 = CapaNegRecursos.ConvertirBase64(Path.Combine(oc.ObjProducto.RutaImagen, oc.ObjProducto.NombreImagen), out conversion),
+                    Extension = Path.GetExtension(oc.ObjProducto.NombreImagen)
+
+
+                },
+                Cantidad = oc.Cantidad
+            }).ToList();
+            return Json(new { data = lista }, JsonRequestBehavior.AllowGet);
+        }
+        public JsonResult OperacionCarrito(int idproducto,bool sumar)
+        {
+          
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            bool respuesta = false;
+            string mensaje = string.Empty;
+
+            respuesta = new CapaN_Carrito().OperacionCarrito(idcliente, idproducto, true, out mensaje);
+
+            return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+        [HttpPost]
+        public JsonResult EliminarCarrito(int idproducto)
+        {
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            bool respuesta = false;
+            string mensaje = string.Empty;
+            respuesta = new CapaN_Carrito().EliminarCarrito(idcliente, idproducto);
+
+            return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
     }
 }
