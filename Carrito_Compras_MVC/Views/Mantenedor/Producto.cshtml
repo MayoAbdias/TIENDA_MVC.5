@@ -197,7 +197,7 @@
             contentType: "application/json; charset=utf-8",
             success: function (data) {
 
-                $("<option>").attr({ "value": "0","disable" : "true" }).text("Seleccionar").appendTo("#selectMarca");
+                $("<option>").attr({ "value": "0","disabled" : "true" }).text("Seleccionar").appendTo("#selectMarca");
 
                 $.each(data.data, function (index, valor) {
                     $("<option>").attr({ "value": valor.IdMarca }).text(valor.Descripcion).appendTo("#selectMarca");
@@ -215,7 +215,7 @@
             contentType: "application/json; charset=utf-8",
             success: function (data) {
 
-                $("<option>").attr({ "value": "0", "disable":"true" }).text("Seleccionar").appendTo("#selectCategoria");
+                $("<option>").attr({ "value": "0", "disabled":"disabled","selected":"true" }).text("Seleccionar").appendTo("#selectCategoria");
 
                 $.each(data.data, function (index, valor) {
                     $("<option>").attr({ "value": valor.IdCategoria }).text(valor.Descripcion).appendTo("#selectCategoria");
@@ -264,8 +264,8 @@
             $("#fileProducto").val("");
             $("#txtNombre").val("");
             $("#txtDescripcion").val("");
-            $("#selectMarca").val("");
-            $("#selectCategoria").val("");
+            $("#selectMarca").val($("#selectMarca option:first").val());
+            $("#selectCategoria").val($("#selectCategoria option:first").val());
             $("#txtPrecio").val("");
             $("#txtStock").val("");
             $("#selectActivo").val(1);
