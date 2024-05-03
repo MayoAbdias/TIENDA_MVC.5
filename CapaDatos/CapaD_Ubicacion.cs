@@ -18,7 +18,7 @@ namespace CapaDatos
             {
                 using (SqlConnection objconexion = new SqlConnection(Conexion.conex))
                 {
-                    string query = "select * from Provincia";
+                    string query = "select * from PROVINCIA";
                     SqlCommand comando = new SqlCommand(query, objconexion);
                     comando.CommandType = CommandType.Text;
 
