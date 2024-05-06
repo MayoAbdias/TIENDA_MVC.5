@@ -33,7 +33,7 @@
                                                 </div>
 
                                                 <div class="col-sm-2 align-self-center">
-                                                    <span >Precio : S/. 1500</span>
+                                                    <span>Precio : S/. 1500</span>
                                                 </div>
 
                                                 <div class="col-sm-2 align-self-center">
@@ -48,7 +48,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div  class="col-sm-2 align-self-center">
+                                                <div class="col-sm-2 align-self-center">
                                                     <button class="btn btn-outline-danger btn-eliminar"><i class="far fa-trash-alt"></i>Eliminar</button>
                                                 </div>
 
@@ -105,7 +105,7 @@
 </div>
 
 @section scripts{
-    
+
     <script>
 
         $(document).ready(function () {
@@ -148,9 +148,10 @@
                                             $("<button>").addClass("btn btn-outline-secondary btn-sumar rounded-0").append($("<i>").addClass("fas fa-plus"))
                                         )
                                     ),
-                                    //comulna 5
+                                    //columna 5
                                     $("<div>").addClass("col-sm-2 align-self-center").append(
-                                        $("<button>").addClass("btn btn-outline-danger btn-eliminar").append($("<i>").addClass("far fa-trash-alt"),"Eliminar")
+                                        $("<button>").addClass("btn btn-outline-danger btn-eliminar").append($("<i>").addClass("far fa-trash-alt"), "Eliminar")
+                                            .data("idproducto", item.ObjProducto.IdProducto),
                                     )
                                 )
                             )
@@ -236,7 +237,118 @@
             $("#total").data("sumatotal", sumaTotal)
         }
 
+        $(document).on("click", ".btn-sumar", function () {
+            //Declaro la variable div_contenedor la cual es un div que tenga la clase "d-flex" (La cual esta en la columna 4 y contiene los botones sumar,restar,eliminar)
+            var div_contenedor = $(this).parent("div.d-flex");
+            //Aca es lo mismo solo que que le digo que dentro del div_contenedor encuentre input-cantidad
+            var input_cantidad = $(div_contenedor).find("input.input-cantidad");
+            var btn = $(this);
+
+            var idproducto = $(input_cantidad).data("ObjProducto").IdProducto;
+
+
+             jQuery.ajax({
+                url: '@Url.Action("OperacionCarrito", "Tienda")',
+                 type: "POST",
+                 data: JSON.stringify({ idproducto: idproducto, sumar: true }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+
+                     $(btn).LoadingOverlay("hide")
+
+                     if (data.respuesta) {
+                         var cantidad = parseInt($(input_cantidad).val()) + 1;
+                         $(input_cantidad).val(cantidad)
+                         SumarTotal()
+                     } else {
+                         swal("",data.mensaje,"warning")
+                     }
+                 },
+                 beforeSend: function () {
+
+                     $(btn).LoadingOverlay("show")
+                 },
+                 error: function (error) {
+
+                     $(btn).LoadingOverlay("hide")
+                 }
+             })
+        })
+        $(document).on("click", ".btn-restar", function () {
+
+             var div_contenedor = $(this).parent("div.d-flex");
+
+             var input_cantidad = $(div_contenedor).find("input.input-cantidad");
+             var btn = $(this);
+
+             var idproducto = $(input_cantidad).data("ObjProducto").IdProducto;
+
+             var cantidad = parseInt($(input_cantidad).val()) - 1;
+
+             if (cantidad >= 1) {
+
+                 jQuery.ajax({
+                     url: '@Url.Action("OperacionCarrito", "Tienda")',
+                     type: "POST",
+                     data: JSON.stringify({ idproducto: idproducto, sumar: false }),
+                     dataType: "json",
+                     contentType: "application/json; charset=utf-8",
+                     success: function (data) {
+
+                        $(btn).LoadingOverlay("hide")
+
+                        if (data.respuesta) {
+
+                           $(input_cantidad).val(cantidad)
+                           SumarTotal()
+                        } else {
+                           swal("",data.mensaje,"warning")
+                        }
+                     },
+                     beforeSend: function () {
+
+                       $(btn).LoadingOverlay("show")
+                     },
+                     error: function (error) {
+
+                        $(btn).LoadingOverlay("hide")
+                     }
+                 })
+             }
+        })
+        $(document).on("click", ".btn-eliminar", function () {
+
+            var idproducto = $(this).data("idproducto");
+            var card_producto = $(this).parents("div.card-producto");
+
+             
+            jQuery.ajax({
+                url: '@Url.Action("EliminarCarrito", "Tienda")',
+                type: "POST",
+                data: JSON.stringify({ idproducto: idproducto}),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+       
+                    if (data.respuesta) {
+
+                        card_producto.remove();
+
+                        MostrarCantidadCarrito();
+
+                        SumarTotal();
+
+                    } else {
+                        swal("",data.mensaje,"warning")
+                    }
+                },
+               
+            })
+              
+         })
+
     </script>
-    
-    }
+
+}
 

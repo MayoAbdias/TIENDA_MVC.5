@@ -96,7 +96,7 @@ namespace CapaPresentacionTienda.Controllers
             }
             else
             {
-                respuesta = new CapaN_Carrito().OperacionCarrito(idcliente, idproducto, true, out mensaje);
+                respuesta = new CapaN_Carrito().OperacionCarrito(idcliente, idproducto,true, out mensaje);
             }
             return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
@@ -133,6 +133,7 @@ namespace CapaPresentacionTienda.Controllers
             }).ToList();
             return Json(new { data = lista }, JsonRequestBehavior.AllowGet);
         }
+        [HttpPost]
         public JsonResult OperacionCarrito(int idproducto,bool sumar)
         {
           
