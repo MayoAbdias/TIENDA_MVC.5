@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -142,7 +145,7 @@ namespace CapaPresentacionTienda.Controllers
             bool respuesta = false;
             string mensaje = string.Empty;
 
-            respuesta = new CapaN_Carrito().OperacionCarrito(idcliente, idproducto, true, out mensaje);
+            respuesta = new CapaN_Carrito().OperacionCarrito(idcliente, idproducto, sumar, out mensaje);
 
             return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
@@ -179,6 +182,40 @@ namespace CapaPresentacionTienda.Controllers
         public ActionResult Carrito()
         {
             return View();
+        }
+
+        [HttpPost]
+        //Creo un metodo asíncrono por los servicios de PayPal
+        public async Task<JsonResult> ProcesarPago(List<Carrito> listaCarrito, Venta oVenta)
+        {
+            decimal total = 0;
+            DataTable detalle_venta = new DataTable();
+
+            detalle_venta.Locale = new CultureInfo("es-AR");
+            detalle_venta.Columns.Add("IdProducto", typeof(string));
+            detalle_venta.Columns.Add("Cantidad", typeof(int));
+            detalle_venta.Columns.Add("Total", typeof(decimal));
+
+            foreach(Carrito ObjCarrito in listaCarrito)
+            {
+                decimal subtotal = Convert.ToDecimal(ObjCarrito.Cantidad.ToString()) * ObjCarrito.ObjProducto.Precio;
+
+                total += subtotal;
+
+                detalle_venta.Rows.Add(new object[]
+                {
+                    ObjCarrito.ObjProducto.IdProducto,
+                    ObjCarrito.Cantidad,
+                    subtotal
+                });
+            }
+            oVenta.MontoTotal = total;
+            oVenta.IdCliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            TempData["Venta"] = oVenta;
+            TempData["DetalleVenta"] = detalle_venta;
+
+            return Json(new { Status = true, Link = "/Tienda/Pagoefectuado?idTransaccion=code=0001&status=true" }, JsonRequestBehavior.AllowGet);
         }
     }
 }

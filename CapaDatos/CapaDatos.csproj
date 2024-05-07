@@ -50,6 +50,7 @@
     <Compile Include="CapaD_Reporte.cs" />
     <Compile Include="CapaD_Ubicacion.cs" />
     <Compile Include="CapaD_Usuarios.cs" />
+    <Compile Include="CapaD_Venta.cs" />
     <Compile Include="Conexion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
