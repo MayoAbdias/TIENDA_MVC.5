@@ -185,7 +185,7 @@ namespace CapaPresentacionTienda.Controllers
         }
 
         [HttpPost]
-        //Creo un metodo asíncrono por los servicios de PayPal
+        //Creo un metodo asíncrono por los servicios de PayPal y creo una tarea (Task)
         public async Task<JsonResult> ProcesarPago(List<Carrito> listaCarrito, Venta oVenta)
         {
             decimal total = 0;
@@ -215,7 +215,28 @@ namespace CapaPresentacionTienda.Controllers
             TempData["Venta"] = oVenta;
             TempData["DetalleVenta"] = detalle_venta;
 
-            return Json(new { Status = true, Link = "/Tienda/Pagoefectuado?idTransaccion=code=0001&status=true" }, JsonRequestBehavior.AllowGet);
+            return Json(new { Status = true, Link = "/Tienda/PagoEfectuado?idTransaccion=code=0001&status=true" }, JsonRequestBehavior.AllowGet);
+        }
+        public async Task<ActionResult> PagoEfectuado()
+        {
+            string idtransaccion = Request.QueryString["idTransaccion"];
+            bool status = Convert.ToBoolean( Request.QueryString["status"]);
+
+            ViewData["Status"] = status;
+
+            if (status)
+            {
+                Venta oVenta = (Venta)TempData["Venta"];
+                DataTable detalle_venta = (DataTable)TempData["DetalleVenta"];
+
+                oVenta.IdTransaccion = idtransaccion;
+                string Mensaje = string.Empty;
+
+                bool respuesta = new CapaN_Venta().Registrar(oVenta, detalle_venta, out Mensaje);
+                //Este viewData me va a permitir compartir el Id de la transaccion con la vista.
+                ViewData["idTransaccion"] = oVenta.IdTransaccion;
+            }
+            return View();
         }
     }
 }

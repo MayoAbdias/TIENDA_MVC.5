@@ -77,11 +77,11 @@
                                             <select class="form-select form-select-sm" id="selectCiudad"></select>
                                         </div>
                                         <div class="mb-2">
-                                            <label for="" class="form-label">Nombre de Contacto:</label>
+                                            <label for="txtNombreContacto" class="form-label">Nombre de Contacto:</label>
                                             <input type="text" class="form-control form-control-sm" id="txtNombreContacto" autocomplete="off">
                                         </div>
                                         <div class="mb-2">
-                                            <label for="" class="form-label">Direccion:</label>
+                                            <label for="txtDireccion" class="form-label">Direccion:</label>
                                             <input type="text" class="form-control form-control-sm" id="txtDireccion" autocomplete="off">
                                         </div>
                                         <div class="mb-2">
@@ -322,7 +322,7 @@
             var idproducto = $(this).data("idproducto");
             var card_producto = $(this).parents("div.card-producto");
 
-             
+
             jQuery.ajax({
                 url: '@Url.Action("EliminarCarrito", "Tienda")',
                 type: "POST",
@@ -330,7 +330,7 @@
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
-       
+
                     if (data.respuesta) {
 
                         card_producto.remove();
@@ -343,10 +343,68 @@
                         swal("",data.mensaje,"warning")
                     }
                 },
-               
+
             })
-              
-         })
+
+        })
+        function RealizarPago() {
+
+            if (parseInt($("#cantidadcarrito").text()) == 0) {
+                swal("", "No existen productos en el carrito", "warning");
+                return
+            }
+
+            if ( $("#selectCiudad").val() == null || $("txtNombreContacto").val() == "" || $("txtDireccion").val() == "" || $("txtTelefono").val() == "") {
+                swal("", "Debes completar los datos de Detalle de Envio", "warning");
+                return
+            }
+            var venta = {
+                TotalProducto: $("input.input-cantidad").length,
+                MontoTotal: 0,
+                Contacto: $("#txtNombreContacto").val(),
+                IdCiudad: $("#selectCiudad").val(),
+                Direccion: $("#txtDireccion").val(),
+                Telefono: $("#txtTelefono").val()
+            }
+            var lista_carrito = [];
+
+            $("input.input-cantidad").each(function (i) {
+
+                var producto = $(this).data("ObjProducto");
+                var cantidad = parseFloat($(this).val())
+                //de esta forma voy a poder agrearle elementos a esta lista
+                lista_carrito.push({
+                    ObjProducto: producto,
+                    Cantidad: cantidad
+                })
+            })
+            jQuery.ajax({
+                url: '@Url.Action("ProcesarPago", "Tienda")',
+                type: "POST",
+                data: JSON.stringify({ listaCarrito: lista_carrito, oVenta: venta }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+
+                    $.LoadingOverlay("hide")
+
+                    if (data.Status) {
+
+                        window.location.href = data.Link;
+                    } else {
+                        swal("", "Vuelva a intentarlo mas tarde por favor","warning");
+                    }
+                },
+                beforeSend: function () {
+                    $.LoadingOverlay("show")
+                },
+                error: function (error) {
+                    $.LoadingOverlay("hide")
+                }
+            })
+
+
+        }   
 
     </script>
 
