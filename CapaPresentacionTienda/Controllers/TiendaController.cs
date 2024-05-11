@@ -10,6 +10,7 @@ using System.Web.Mvc;
 
 using CapaEntidad;
 using CapaNegocio;
+using CapaEntidad.PayPal;
 
 namespace CapaPresentacionTienda.Controllers
 {
@@ -196,11 +197,27 @@ namespace CapaPresentacionTienda.Controllers
             detalle_venta.Columns.Add("Cantidad", typeof(int));
             detalle_venta.Columns.Add("Total", typeof(decimal));
 
+            //Creo un alista de elementos
+            List<Item> listaItem = new List<Item>();
+
             foreach(Carrito ObjCarrito in listaCarrito)
             {
                 decimal subtotal = Convert.ToDecimal(ObjCarrito.Cantidad.ToString()) * ObjCarrito.ObjProducto.Precio;
 
                 total += subtotal;
+
+                //En la lista voy a guardar todos los productos que esten dentro del carrito
+                listaItem.Add(new Item()
+                {
+                    name = ObjCarrito.ObjProducto.Nombre,
+                    quantity = ObjCarrito.Cantidad.ToString(),
+                    unit_amount = new UnitAmount()
+                    {
+                        currency_code = "USD",
+                        value = ObjCarrito.ObjProducto.Precio.ToString("G", new CultureInfo("es-AR"))
+
+                    }
+                });
 
                 detalle_venta.Rows.Add(new object[]
                 {
@@ -209,27 +226,72 @@ namespace CapaPresentacionTienda.Controllers
                     subtotal
                 });
             }
+            PurchaseUnit purchaseUnit = new PurchaseUnit()
+            {
+                //Le paso el monto total de los precios
+                amount = new Amount()
+                {
+                    currency_code = "USD",
+                    value = total.ToString("G", new CultureInfo("es-AR")),
+                    //Le paso los mismos valores al breakdown
+                    breakdown = new Breakdown()
+                    {
+                        item_total = new ItemTotal()
+                        {
+                            currency_code = "USD",
+                            value = total.ToString("G", new CultureInfo("es-AR")),
+                        }
+                    }
+                },
+                description = "Compra de articulos de Mi Tienda",
+                items = listaItem
+            };
+            Checkout_order checkout_Order = new Checkout_order()
+            {
+                intent = "CAPTURE",
+                purchase_units = new List<PurchaseUnit>() { purchaseUnit },
+                application_context = new ApplicationContext()
+                {
+                    brand_name = "MiTienda.com",
+                    landing_page = "NO_PREFERENCE",
+                    user_action = "PAY_NOW",
+                    return_url = "https://localhost:44369/Tienda/PagoEfectuado",
+                    cancel_url = "https://localhost:44369/Tienda/Carrito",
+
+                }
+            };
             oVenta.MontoTotal = total;
             oVenta.IdCliente = ((Cliente)Session["Cliente"]).IdCliente;
 
             TempData["Venta"] = oVenta;
             TempData["DetalleVenta"] = detalle_venta;
 
-            return Json(new { Status = true, Link = "/Tienda/PagoEfectuado?idTransaccion=code=0001&status=true" }, JsonRequestBehavior.AllowGet);
+            CapaN_PayPal negPaypal = new CapaN_PayPal();
+            Response_Paypal<Response_Checkout> response_Paypal = new Response_Paypal<Response_Checkout>();
+
+            //dentro del response_Paypal voy a recibir la respuesta de la ejecucion del metodo Crear solicitud.
+            response_Paypal = await negPaypal.CrearSolicitud(checkout_Order);
+
+            return Json(response_Paypal , JsonRequestBehavior.AllowGet);
         }
         public async Task<ActionResult> PagoEfectuado()
         {
-            string idtransaccion = Request.QueryString["idTransaccion"];
-            bool status = Convert.ToBoolean( Request.QueryString["status"]);
+            //Este toquen lo va a recibir de la url de PagoEfectuado.
+            string token = Request.QueryString["token"];
+            CapaN_PayPal payPal = new CapaN_PayPal();
+            //Creo un objeto de respuesta.
+            Response_Paypal<Response_Capture> response_Paypal = new Response_Paypal<Response_Capture>();
+            //Dentro de esta variable "response_Paypal" va a recibir la respuesta de la ejecucion del metodo AprobarPago.
+            response_Paypal = await payPal.AprobarPago(token);
 
-            ViewData["Status"] = status;
+            ViewData["Status"] = response_Paypal.Status;
 
-            if (status)
+            if (response_Paypal.Status)
             {
                 Venta oVenta = (Venta)TempData["Venta"];
                 DataTable detalle_venta = (DataTable)TempData["DetalleVenta"];
 
-                oVenta.IdTransaccion = idtransaccion;
+                oVenta.IdTransaccion = response_Paypal.Response.purchase_units[0].payments.captures[0].id;
                 string Mensaje = string.Empty;
 
                 bool respuesta = new CapaN_Venta().Registrar(oVenta, detalle_venta, out Mensaje);

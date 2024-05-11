@@ -51,7 +51,7 @@ namespace CapaNegocio
                 return response_paypal;
             }
         }
-        public async Task<Response_Paypal<Response_Capture>> AprovarPago(string token)
+        public async Task<Response_Paypal<Response_Capture>> AprobarPago(string token)
         {
             Response_Paypal<Response_Capture> response_paypal = new Response_Paypal<Response_Capture>();
 

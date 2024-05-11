@@ -10,7 +10,6 @@ namespace CapaEntidad.PayPal
     {
         public string id { get; set; }
         public string status { get; set; }
-        public PaymentSource payment_source { get; set; }
         public List<Link> links { get; set; }
     }
     // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
