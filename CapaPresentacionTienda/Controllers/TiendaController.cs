@@ -11,6 +11,7 @@ using System.Web.Mvc;
 using CapaEntidad;
 using CapaNegocio;
 using CapaEntidad.PayPal;
+using CapaPresentacionTienda.Filter;
 
 namespace CapaPresentacionTienda.Controllers
 {
@@ -179,7 +180,8 @@ namespace CapaPresentacionTienda.Controllers
 
             return Json(new { lista = oLista }, JsonRequestBehavior.AllowGet);
         }
-
+        [ValidarSession]
+        [Authorize]
         public ActionResult Carrito()
         {
             return View();
@@ -274,6 +276,8 @@ namespace CapaPresentacionTienda.Controllers
 
             return Json(response_Paypal , JsonRequestBehavior.AllowGet);
         }
+        [ValidarSession]
+        [Authorize]
         public async Task<ActionResult> PagoEfectuado()
         {
             //Este toquen lo va a recibir de la url de PagoEfectuado.
@@ -299,6 +303,33 @@ namespace CapaPresentacionTienda.Controllers
                 ViewData["idTransaccion"] = oVenta.IdTransaccion;
             }
             return View();
+        }
+        [ValidarSession]
+        [Authorize]
+        public ActionResult MisCompras()
+        {
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            List<DetalleVenta> lista = new List<DetalleVenta>();
+            bool conversion;
+
+            lista = new CapaN_Venta().ListarCompras(idcliente).Select(oc => new DetalleVenta()
+            {
+                ObjProducto = new Producto()
+                {
+                    Nombre = oc.ObjProducto.Nombre,
+                    Precio = oc.ObjProducto.Precio,
+                    RutaImagen = oc.ObjProducto.RutaImagen,
+                    Base64 = CapaNegRecursos.ConvertirBase64(Path.Combine(oc.ObjProducto.RutaImagen, oc.ObjProducto.NombreImagen), out conversion),
+                    Extension = Path.GetExtension(oc.ObjProducto.NombreImagen)
+
+
+                },
+                Cantidad = oc.Cantidad,
+                Total = oc.Total,
+                IdTransaccion = oc.IdTransaccion
+            }).ToList();
+            return View(lista);
         }
     }
 }
