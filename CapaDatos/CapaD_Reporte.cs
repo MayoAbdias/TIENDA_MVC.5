@@ -21,7 +21,7 @@ namespace CapaDatos
                 { 
                     SqlCommand comando = new SqlCommand("SP_REPORTE_VENTA", objconexion);
                    
-                    comando.Parameters.AddWithValue("FechaInicion", fechaInicio);
+                    comando.Parameters.AddWithValue("FechaInicio", fechaInicio);
                     comando.Parameters.AddWithValue("FechaFin", fechaFin);
                     comando.Parameters.AddWithValue("IdTransaccion", idTransaccion);
                     comando.CommandType = CommandType.StoredProcedure;
@@ -38,13 +38,12 @@ namespace CapaDatos
                                     FechaVenta = reader["FechaVenta"].ToString(),
                                     Cliente = reader["Cliente"].ToString(),
                                     Producto = reader["Producto"].ToString(),
-                                    Precio = Convert.ToDecimal( reader["Precio"], new CultureInfo("es-AR")),
-                                    Cantidad =Convert.ToInt32( reader["Cantidad"].ToString()),
+                                    Precio = Convert.ToDecimal(reader["Precio"], new CultureInfo("es-AR")),
+                                    Cantidad = Convert.ToInt32(reader["Cantidad"].ToString()),
                                     Total = Convert.ToDecimal(reader["Total"], new CultureInfo("es-AR")),
                                     IdTransaccion = reader["IdTransaccion"].ToString()
-                                }
-
-                                );
+                                }                                
+                            );
                         }
                     }
                 }
